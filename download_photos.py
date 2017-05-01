@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import click
 import os
+import time
 import sys
 import socket
 import requests
@@ -83,17 +84,20 @@ def download(directory, username, password, size, recent, \
                 created_date = None
                 try:
                     created_date = parse(photo.created)
+		    filename = filename_with_size(photo, size)
                 except TypeError:
                     print "Could not find created date for photo!"
                     continue
 
                 date_path = '{:%Y/%m/%d}'.format(created_date)
-                download_dir = '/'.join((directory, date_path))
-
+                #download_dir = '/'.join((directory, date_path))
+		download_dir = directory
                 if not os.path.exists(download_dir):
                     os.makedirs(download_dir)
 
-                download_photo(photo, size, force_size, download_dir, progress_bar)
+                print created_date, filename
+                mtime=time.mktime(time.strptime(str(created_date), '%Y-%m-%d %H:%M:%S+00:00'))
+                download_photo(photo, size, force_size, download_dir, progress_bar, mtime)
                 break
 
             except (requests.exceptions.ConnectionError, socket.timeout):
@@ -182,7 +186,7 @@ def filename_with_size(photo, size):
     return photo.filename.encode('utf-8') \
         .decode('ascii', 'ignore').replace('.', '-%s.' % size)
 
-def download_photo(photo, size, force_size, download_dir, progress_bar):
+def download_photo(photo, size, force_size, download_dir, progress_bar, mtime):
     # Strip any non-ascii characters.
     filename = filename_with_size(photo, size)
     download_path = '/'.join((download_dir, filename))
@@ -196,7 +200,7 @@ def download_photo(photo, size, force_size, download_dir, progress_bar):
 
     # Fall back to original if requested size is not available
     if size not in photo.versions and not force_size and size != 'original':
-        download_photo(photo, 'original', True, download_dir, progress_bar)
+        download_photo(photo, 'original', True, download_dir, progress_bar, mtime)
         return
 
     progress_bar.set_description("Downloading %s to %s" % (truncated_filename, truncated_path))
@@ -226,6 +230,8 @@ def download_photo(photo, size, force_size, download_dir, progress_bar):
     else:
         tqdm.write("Could not download %s! Maybe try again later." % photo.filename)
 
+    print download_path
+    os.utime(download_path,(mtime,mtime))
 
 if __name__ == '__main__':
     download()
