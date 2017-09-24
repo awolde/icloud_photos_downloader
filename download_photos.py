@@ -95,40 +95,39 @@ def download(directory, username, password, size, recent, \
                         "Skipping %s, only downloading photos." % photo.filename)
                     continue
 
-<<<<<<< HEAD
                 created_date = None
                 try:
-                    created_date = parse(photo.created)
-		    filename = filename_with_size(photo, size)
+                    created_date = photo.created
+                    #created_date = parse(photo.created)
+                    filename = filename_with_size(photo, size)
                 except TypeError:
-                    print "Could not find created date for photo!"
+                    print ("Could not find created date for photo!")
                     continue
-=======
-                created_date = photo.created
->>>>>>> 681c122437a62e7e4439e68f5ba638edef836473
-
                 date_path = '{:%Y/%m/%d}'.format(created_date)
-                #download_dir = '/'.join((directory, date_path))
-		download_dir = directory
+                download_dir = directory
                 if not os.path.exists(download_dir):
                     os.makedirs(download_dir)
 
-<<<<<<< HEAD
-                print created_date, filename
-                mtime=time.mktime(time.strptime(str(created_date), '%Y-%m-%d %H:%M:%S+00:00'))
-                download_photo(photo, size, force_size, download_dir, progress_bar, mtime)
-=======
+                print (created_date, filename)
+                str_created_date = str(created_date).split('.')[0]
+                mtime = None
+                try: 
+                    mtime=time.mktime(time.strptime(str_created_date, '%Y-%m-%d %H:%M:%S'))
+                except ValueError:
+                    str_created_date = str(created_date).split('+')[0]
+                    mtime=time.mktime(time.strptime(str_created_date, '%Y-%m-%d %H:%M:%S'))
+                #mtime=time.mktime(time.strptime(str(created_date), '%Y-%m-%d %H:%M:%S+00:00'))
                 download_path = local_download_path(photo, size, download_dir)
+                #download_photo(photo, download_path, size, force_size, download_dir, progress_bar, mtime)
                 if os.path.isfile(download_path):
                     if until_found is not None:
                         consecutive_files_found += 1
                     progress_bar.set_description("%s already exists." % truncate_middle(download_path, 96))
                     break
 
-                download_photo(photo, download_path, size, force_size, download_dir, progress_bar)
+                download_photo(photo, download_path, size, force_size, download_dir, progress_bar, mtime)
                 if until_found is not None:
                     consecutive_files_found = 0
->>>>>>> 681c122437a62e7e4439e68f5ba638edef836473
                 break
 
             except (requests.exceptions.ConnectionError, socket.timeout):
@@ -201,27 +200,20 @@ def filename_with_size(photo, size):
     return photo.filename.encode('utf-8') \
         .decode('ascii', 'ignore').replace('.', '-%s.' % size)
 
-<<<<<<< HEAD
-def download_photo(photo, size, force_size, download_dir, progress_bar, mtime):
-=======
 def local_download_path(photo, size, download_dir):
->>>>>>> 681c122437a62e7e4439e68f5ba638edef836473
     # Strip any non-ascii characters.
     filename = filename_with_size(photo, size)
     download_path = '/'.join((download_dir, filename))
 
     return download_path
 
-def download_photo(photo, download_path, size, force_size, download_dir, progress_bar):
+def download_photo(photo, download_path, size, force_size, download_dir, progress_bar, mtime):
+#def download_photo(photo, download_path, size, force_size, download_dir, progress_bar):
     truncated_path = truncate_middle(download_path, 96)
 
     # Fall back to original if requested size is not available
     if size not in photo.versions and not force_size and size != 'original':
-<<<<<<< HEAD
-        download_photo(photo, 'original', True, download_dir, progress_bar, mtime)
-=======
-        download_photo(photo, download_path, 'original', True, download_dir, progress_bar)
->>>>>>> 681c122437a62e7e4439e68f5ba638edef836473
+        download_photo(photo, download_path, 'original', True, download_dir, progress_bar, mtime)
         return
 
     progress_bar.set_description("Downloading %s" % truncated_path)
@@ -251,7 +243,7 @@ def download_photo(photo, download_path, size, force_size, download_dir, progres
     else:
         tqdm.write("Could not download %s! Maybe try again later." % photo.filename)
 
-    print download_path
+    print (download_path)
     os.utime(download_path,(mtime,mtime))
 
 if __name__ == '__main__':
