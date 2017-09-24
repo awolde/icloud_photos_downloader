@@ -19,12 +19,9 @@
     git clone https://github.com/ndbroadbent/icloud_photos_downloader.git
     cd icloud_photos_downloader
 
-    # Install dependencies
+    # Install dependencies (Linux)
     sudo pip install -r requirements.txt
 
-(Please note that `requirements.txt` references a patched version of the
-[pyicloud](https://github.com/picklepete/pyicloud) library. We are using the [#photos-update branch](https://github.com/picklepete/pyicloud/pull/100),
-which has a fix for updating recent photos.)
 
 ### Authentication
 
@@ -45,6 +42,7 @@ NOTE: Using the [system keyring to store your iCloud password](https://github.co
                            --password=<password>
                            [--size=(original|medium|thumb)]
                            [--recent <integer>]
+                           [--until-found <integer>]
                            [--auto-delete]
 
     Options:
@@ -52,6 +50,9 @@ NOTE: Using the [system keyring to store your iCloud password](https://github.co
       --password <password>           Your iCloud password
       --size [original|medium|thumb]  Image size to download (default: original)
       --recent INTEGER                Number of recent photos to download (default: download all photos)
+      --until-found INTEGER RANGE     Download most recently added photos until we
+                                      find x number of previously downloaded
+                                      consecutive photos (default: download all photos)
       --download-videos               Download both videos and photos (default: only download photos)
       --force-size                    Only download the requested size
                                       (default: download original if size is not available)
